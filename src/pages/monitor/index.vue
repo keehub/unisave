@@ -1,4 +1,5 @@
 <script lang="ts">
+import api from '@uni-helper/uni-network'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
 // #ifdef H5 || APP-PLUS
 import player from '../player/index.vue'
