@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态口令子页面</title>
+</head>
+
+<body>
+    <div style="max-width: 600px;margin: 0 auto;">
+        <div style=" margin-top: 2rem; margin-bottom: 2rem;">
+            <span style="color: #333; font-size: 1.5rem; margin-bottom: 1rem;">这是被嵌套的子页面</span>
+            <span id="miniProgramNote" style="color: #6c757d; font-size: 0.9rem;" />
+        </div>
+        <div style="padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 1.5rem;
+            display: flex; justify-content: space-between; align-items: center;">
+            <span id="tokenValue" style="color: #6c757d;font-size: 0.9rem;flex-grow: 1;overflow: hidden; 
+                text-overflow: ellipsis;white-space: nowrap;">尚未获取</span>
+            <button id="requestBtn"
+                style="background-color: #0d6efd; color: white;border: none;border-radius: 6px;padding: 5px;">
+                获取动态口令
+            </button>
+        </div>
+    </div>
+    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
+    <script>new VConsole();</script>
+    <script type="text/javascript" src="https://js.cdn.aliyun.dcloud.net.cn/dev/uni-app/uni.webview.1.5.2.js"></script>
+    <script>
+        function isMiniProgram() {
+            return (navigator.userAgent.includes('miniprogram') ||
+                window.__wxjs_environment === 'miniprogram' ||
+                typeof __wxjs_environment !== 'undefined');
+        }
+        function isAppEnvironment() {
+            return (navigator.userAgent.includes('Html5Plus') ||
+                typeof plus !== 'undefined' ||
+                navigator.userAgent.includes('UNIAPP'));
+        }
+        function isH5Environment() {
+            return !isMiniProgram() && !isAppEnvironment();
+        }
+        function sendRequestAuthorization() {
+            const message = JSON.stringify({ type: 'requestAuthorization' });
+            console.log("[子页面]正在获取动态口令: ", message);
+            if (isMiniProgram()) {
+                if (typeof WeixinJSBridge !== 'undefined') {
+                    WeixinJSBridge.invoke('postMessage', {
+                        data: message,
+                        complete: function () {
+                            console.log('小程序环境: 动态口令请求已发送');
+                        }
+                    });
+                } else {
+                    console.error("小程序环境: WeixinJSBridge 不可用");
+                }
+            } else if (isAppEnvironment()) {
+                if (typeof plus !== 'undefined') {
+                    try {
+                        plus.webview.postMessageToParent(message, '*');
+                    } catch (e) {
+                        console.error('[子页面]App环境发送消息失败:', e);
+                    }
+                }
+            } else if (isH5Environment()) {
+                if (window.parent) {
+                    window.parent.postMessage(message, '*');
+                } else {
+                    console.error("[子页面]H5环境: 无法访问window.parent");
+                }
+            }
+        }
+        function handleTokenMessage(payload) {
+            try {
+                if (typeof payload !== 'string') return;
+                const message = JSON.parse(payload);
+                if (message.type === 'authorization') {
+                    document.getElementById('tokenValue').textContent = message.data;
+                    console.log('[子页面]成功获取动态口令:', message.data);
+                }
+            } catch (e) {
+                console.error('解析消息失败:', e);
+            }
+        }
+        function setupTokenListener() {
+            if (isMiniProgram() && typeof WeixinJSBridge !== 'undefined') {
+                WeixinJSBridge.on('message', function (event) {
+                    handleTokenMessage(event.data);
+                });
+            } else {
+                window.addEventListener('message', (event) => {
+                    handleTokenMessage(event.data);
+                });
+            }
+        }
+        function initPage() {
+            const requestBtn = document.getElementById('requestBtn');
+            const miniProgramNote = document.getElementById('miniProgramNote');
+            if (isMiniProgram()) {
+                miniProgramNote.textContent = "当前为小程序环境";
+            } else if (isAppEnvironment()) {
+                miniProgramNote.textContent = "当前为App环境";
+            } else if (isH5Environment()) {
+                miniProgramNote.textContent = "当前为H5环境";
+            } else {
+                miniProgramNote.textContent = "环境适配失败，无法获取动态口令";
+            }
+
+            requestBtn.addEventListener('click', () => {
+                document.getElementById('tokenValue').textContent = "请求动态口令...";
+                sendRequestAuthorization();
+            });
+
+            document.getElementById('tokenValue').textContent = "请求动态口令...";
+            sendRequestAuthorization();
+        }
+        document.addEventListener('DOMContentLoaded', () => {
+            setupTokenListener();
+            initPage();
+        });
+
+
+        document.addEventListener('UniAppJSBridgeReady', function () {
+            uni.getEnv(function (res) {
+                console.log('当前环境：' + JSON.stringify(res));
+            });
+        });
+    </script>
+</body>
+
+</html>

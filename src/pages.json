@@ -20,6 +20,14 @@
       "layout": "home"
     },
     {
+      "path": "pages/monitor/index",
+      "type": "page"
+    },
+    {
+      "path": "pages/player/index",
+      "type": "page"
+    },
+    {
       "path": "pages/unocss/index",
       "type": "page"
     },
@@ -35,6 +43,11 @@
     "navigationBarTitleText": "unisave",
     "app-plus": {
       "titleNView": false
+    },
+    "mp-weixin": {
+      "vueOptions": {
+        "runtime": true
+      }
     }
   },
   "subPackages": [

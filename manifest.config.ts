@@ -6,7 +6,7 @@ const projectName = getProjectName()
 
 export default defineManifestConfig({
   'name': 'unisave',
-  'appid': '',
+  'appid': '__UNI__D68C7B5',
   'description': '',
   'versionName': '1.0.1',
   'versionCode': '101',
@@ -64,7 +64,7 @@ export default defineManifestConfig({
   'quickapp': {},
   /* 小程序特有相关 */
   'mp-weixin': {
-    appid: 'testappid',
+    appid: 'wxbccf5ff5f1db93dc',
     setting: {
       urlCheck: false,
     },
@@ -95,5 +95,6 @@ function getProjectName(name?: string) {
   }
   // 项目名称
   const projectname = name ?? 'unisave'
-  return `【${prefix[process.env.NODE_ENV]}】${projectname}`
+  const env = process.env.NODE_ENV as 'development' | 'production'
+  return `【${prefix[env]}】${projectname}`
 }

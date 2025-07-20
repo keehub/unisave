@@ -6,6 +6,8 @@
 interface NavigateToOptions {
   url: "/pages/index/index" |
        "/pages/hi" |
+       "/pages/monitor/index" |
+       "/pages/player/index" |
        "/pages/unocss/index" |
        "/pages/uview-plus/index" |
        "/pages-sub/sub";
