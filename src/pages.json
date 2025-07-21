@@ -17,23 +17,30 @@
     {
       "path": "pages/hi",
       "type": "page",
-      "layout": "home"
+      "layout": "home",
+      "style": {}
     },
     {
       "path": "pages/monitor/index",
-      "type": "page"
+      "type": "page",
+      "style": {
+        "navigationBarTitleText": "监控"
+      }
     },
     {
       "path": "pages/player/index",
-      "type": "page"
+      "type": "page",
+      "style": {}
     },
     {
       "path": "pages/unocss/index",
-      "type": "page"
+      "type": "page",
+      "style": {}
     },
     {
       "path": "pages/uview-plus/index",
-      "type": "page"
+      "type": "page",
+      "style": {}
     }
   ],
   "globalStyle": {
@@ -43,12 +50,27 @@
     "navigationBarTitleText": "unisave",
     "app-plus": {
       "titleNView": false
-    },
-    "mp-weixin": {
-      "vueOptions": {
-        "runtime": true
-      }
     }
+  },
+  "tabBar": {
+    "color": "#000000",
+    "selectedColor": "#ff0000",
+    "backgroundColor": "#F7F7F7",
+    "borderStyle": "black",
+    "list": [
+      {
+        "text": "首页",
+        "iconPath": "/static/tb11.png",
+        "pagePath": "pages/index/index",
+        "selectedIconPath": "/static/tb12.png"
+      },
+      {
+        "text": "监控",
+        "iconPath": "/static/tb41.png",
+        "pagePath": "pages/monitor/index",
+        "selectedIconPath": "/static/tb42.png"
+      }
+    ]
   },
   "subPackages": [
     {

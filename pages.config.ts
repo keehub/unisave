@@ -10,7 +10,13 @@ export default defineUniPages({
     },
   },
   // 你也可以定义 pages 字段，它具有最高的优先级。
-  pages: [],
+  pages: [{
+    path: 'pages/index/index',
+    style: { navigationBarTitleText: '首页' },
+  }, {
+    path: 'pages/monitor/index',
+    style: { navigationBarTitleText: '监控' },
+  }],
   globalStyle: {
     'navigationBarBackgroundColor': '#fff',
     'backgroundColor': '#fff',
@@ -19,5 +25,25 @@ export default defineUniPages({
     'app-plus': {
       titleNView: false, // 移除 H5、APP 顶部导航
     },
+  },
+  tabBar: {
+    color: '#000000',
+    selectedColor: '#ff0000',
+    backgroundColor: '#F7F7F7',
+    borderStyle: 'black',
+    list: [
+      {
+        text: '首页',
+        iconPath: '/static/tb11.png',
+        pagePath: 'pages/index/index',
+        selectedIconPath: '/static/tb12.png',
+      },
+      {
+        text: '监控',
+        iconPath: '/static/tb41.png',
+        pagePath: 'pages/monitor/index',
+        selectedIconPath: '/static/tb42.png',
+      },
+    ],
   },
 })

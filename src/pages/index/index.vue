@@ -18,7 +18,7 @@ onLoad(() => {
   <view us-flex="~ col items-center justify-center" us-p-50px>
     <Logos />
     <InputEntry />
-    <view v-if="repos" us-border="1 solid" us-mt-4>
+    <view v-if="repos" us-border="1 solid" us-mt-4 class="p-10 text-center">
       <h2>
         请求返回结果：
       </h2>
@@ -26,6 +26,7 @@ onLoad(() => {
       <p>{{ repos.description }}</p>
       <a class="icon-btn" :href="repos.html_url" target="_blank">仓库地址</a>
     </view>
+    <Footer />
   </view>
 </template>
 

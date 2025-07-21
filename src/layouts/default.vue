@@ -1,11 +1,8 @@
 <template>
-  <main
-    class="p-10 text-center"
-  >
+  <main>
     <slot />
-    <Footer />
     <view class="mx-auto mt-4 text-center text-sm opacity-50">
-      [Default Layout]
+      @2025 贵州智慧水利科技有限责任公司
     </view>
   </main>
 </template>
