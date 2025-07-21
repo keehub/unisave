@@ -20,16 +20,22 @@ export default defineComponent({
     const iframeRef = ref<HTMLIFrameElement | null>(null)
     let loadTimer: ReturnType<typeof setTimeout> | null = null
 
-    // #ifdef MP
+    // #ifdef MP || APP-PLUS
     const instance = getCurrentInstance() as any
-    instance?.proxy?.$scope?.getOpenerEventChannel?.().on('navigateToSendData', (data: any) => {
-      if (data.playUrl)
-        dynamicPlayUrl.value = data.playUrl
-      if (data.playTitle)
-        dynamicPlayTitle.value = data.playTitle
-      if (data.authorization)
-        dynamicAuthorization.value = data.authorization
-    })
+    const eventChannel = instance?.proxy?.$scope?.getOpenerEventChannel?.()
+    if (eventChannel) {
+      eventChannel.on('navigateToSendData', (data: any) => {
+        console.log('收到跳转数据', data)
+        if (data.playUrl) {
+          dynamicPlayUrl.value = data.playUrl
+          reloadKey.value++ // 关键：强制重新加载组件
+        }
+        if (data.playTitle)
+          dynamicPlayTitle.value = data.playTitle
+        if (data.authorization)
+          dynamicAuthorization.value = data.authorization
+      })
+    }
     // #endif
 
     // 发送动态口令
@@ -127,7 +133,6 @@ export default defineComponent({
       isLoading.value = false
       clearLoadTimer()
     }
-
     onUnmounted(() => {
       clearLoadTimer()
       // #ifdef H5
@@ -156,7 +161,7 @@ export default defineComponent({
 
 <template>
   <view class="player-fullscreen">
-    <!-- #ifdef H5 | APP-PLUS -->
+    <!-- #ifdef H5 -->
     <view class="player-header">
       <u-icon name="arrow-left" size="32" color="#000" class="back-icon" @click="closePlayer" />
       <text class="player-title">
@@ -166,16 +171,16 @@ export default defineComponent({
     </view>
     <!-- #endif -->
     <view class="player-content">
-      <!-- #ifdef MP | APP-PLUS -->
-      <web-view
-        v-show="!showError && !isLoading" :key="reloadKey" class="video-frame" :src="playUrl"
-        @error="handlePlayerError" @load="handlePlayerLoad" @message="handleEmbeddedPageMessage"
-      />
-      <!-- #endif -->
       <!-- #ifdef H5 -->
       <iframe
         v-show="!showError && !isLoading" :key="reloadKey" ref="iframeRef" class="video-frame" :src="playUrl"
         allow="autoplay; fullscreen; screen-wake-lock" @error="handlePlayerError" @load="handlePlayerLoad"
+      />
+      <!-- #endif -->
+      <!-- #ifdef MP | APP-PLUS -->
+      <web-view
+        v-show="!showError && !isLoading" :key="reloadKey" class="video-frame" :src="playUrl"
+        @error="handlePlayerError" @load="handlePlayerLoad" @message="handleEmbeddedPageMessage"
       />
       <!-- #endif -->
       <view v-if="isLoading" class="loading-center">

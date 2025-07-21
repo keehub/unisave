@@ -1,13 +1,13 @@
 <script lang="ts">
 import api from '@uni-helper/uni-network'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
-// #ifdef H5 || APP-PLUS
+// #ifdef H5
 import player from '../player/index.vue'
 // #endif
 
 export default defineComponent({
   name: 'MonitorPage',
-  // #ifdef H5 || APP-PLUS
+  // #ifdef H5
   components: {
     player,
   },
@@ -23,19 +23,22 @@ export default defineComponent({
     const nestedTree = ref<any[]>([])
     const baseUrl = ref('https://water.nbcxps.com')
     const authorization = ref('Bearer eyJhbGciOiJSUzI1N')
+    const closePlayer = () => {
+      showPlayer.value = false
+    }
+
     const isDeviceNode = (node: any): boolean => {
       return node?.playInfo != null
     }
 
     const expandDeepest = (node: any): any => {
-      if (isDeviceNode(node))
+      if (isDeviceNode(node)) {
         return null
+      }
       node.expanded = true
-
       const nonDeviceChildren = (node.children || []).filter(
         (child: any) => !isDeviceNode(child),
       )
-
       if (nonDeviceChildren.length > 0) {
         return expandDeepest(nonDeviceChildren[0])
       }
@@ -47,6 +50,7 @@ export default defineComponent({
         node.expanded = !node.expanded
       }
     }
+
     const collectPlayableDevices = (node: any): any[] => {
       const devices: any[] = []
       const traverse = (currentNode: any) => {
@@ -74,7 +78,6 @@ export default defineComponent({
       else {
         showTree.value = false
       }
-
       selectedId.value = node.id
       selectedLabel.value = node.labelNotes
       videoList.value = collectPlayableDevices(node)
@@ -94,6 +97,7 @@ export default defineComponent({
         }
       })
     }
+
     const prepareTreeData = (data: any) => {
       nestedTree.value = transformToNestedTree(data, 0)
       if (nestedTree.value.length > 0) {
@@ -126,30 +130,30 @@ export default defineComponent({
         uni.showToast({ title: '该设备暂时无法操作', icon: 'none' })
         return
       }
-      // playUrl.value = baseUrl.value + url;
-      playUrl.value = 'https://water.sxsrxt.com/video/dist/test.html'
-      playTitle.value = item.labelNotes
+      const title = item.labelNotes
+      const fullUrl = baseUrl.value + url
+      // fullUrl = 'https://water.sxsrxt.com/video/dist/test.html'
 
-      // #ifdef H5 || APP-PLUS
+      // #ifdef H5
+      playTitle.value = title
+      playUrl.value = fullUrl
       showPlayer.value = true
       // #endif
 
-      // #ifdef MP
+      // #ifdef MP || APP-PLUS
       uni.navigateTo({
         url: '/pages/player/index',
         success: (res) => {
           res.eventChannel.emit('navigateToSendData', {
             authorization: authorization.value,
-            playUrl: playUrl.value,
+            playUrl: fullUrl, // 改为使用当前生成的 fullUrl 而不是 playUrl.value
+            playTitle: title, // 直接传递当前视频的标题
           })
         },
       })
       // #endif
     }
 
-    const closePlayer = () => {
-      showPlayer.value = false
-    }
     onMounted(() => {
       uni.showLoading({ title: '数据加载中...' })
       api.get(`${baseUrl.value}/video/wvp/api/sangrui/tree`)
@@ -170,20 +174,20 @@ export default defineComponent({
     })
 
     return {
-      playTitle,
-      selectedId,
+      baseUrl,
       playUrl,
-      authorization,
-      selectedLabel,
       showTree,
       showPlayer,
+      playTitle,
+      selectedId,
       videoList,
       displayList,
-      baseUrl,
-      toggleExpand,
-      handleNodeClick,
+      authorization,
+      selectedLabel,
       playVideo,
       closePlayer,
+      toggleExpand,
+      handleNodeClick,
     }
   },
   onLoad() {

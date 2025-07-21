@@ -11,7 +11,12 @@
       "path": "pages/index/index",
       "type": "home",
       "style": {
-        "navigationBarTitleText": "首页"
+        "navigationBarTitleText": "首页",
+        "app-plus": {
+          "titleNView": {
+            "autoBackButton": false
+          }
+        }
       }
     },
     {
@@ -24,7 +29,12 @@
       "path": "pages/monitor/index",
       "type": "page",
       "style": {
-        "navigationBarTitleText": "监控"
+        "navigationBarTitleText": "监控",
+        "app-plus": {
+          "titleNView": {
+            "autoBackButton": false
+          }
+        }
       }
     },
     {
@@ -49,7 +59,14 @@
     "navigationBarTextStyle": "black",
     "navigationBarTitleText": "unisave",
     "app-plus": {
-      "titleNView": false
+      "titleNView": {
+        "backgroundColor": "#fff",
+        "titleColor": "#000000",
+        "splitLine": {
+          "color": "#eaeaea",
+          "height": "1px"
+        }
+      }
     }
   },
   "tabBar": {
