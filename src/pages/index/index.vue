@@ -1,16 +1,8 @@
 <script setup lang="ts">
-import { fetchGithubRepos, type GithubReposRes } from '@/services/apis/repos'
-
-const repos = ref<GithubReposRes | null>(null)
-
-async function getRepos() {
-  const result = await fetchGithubRepos()
-  repos.value = result
-  console.log(result)
-}
-
-onLoad(() => {
-  getRepos()
+const repos = ref<GithubReposRes | null>({
+  name: 'unisave',
+  description: '拥抱 web 开发，拯救 uniapp。👋👋👋 基于Uniapp、Vue 3、pinia(且持久化保存)、Typescript、UnoCSS等主流技术开发的开箱即用模版，适配所有(app、mp、web)平台！！！',
+  html_url: 'https://github.com/sunpm/unisave',
 })
 </script>
 

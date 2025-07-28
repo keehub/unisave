@@ -25,74 +25,17 @@
     </div>
     <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
     <script>new VConsole();</script>
-    <script type="text/javascript" src="https://js.cdn.aliyun.dcloud.net.cn/dev/uni-app/uni.webview.1.5.2.js"></script>
     <script>
         function isMiniProgram() {
-            return (navigator.userAgent.includes('miniprogram') ||
-                window.__wxjs_environment === 'miniprogram' ||
-                typeof __wxjs_environment !== 'undefined');
+            return (navigator.userAgent.includes('miniprogram') || window.__wxjs_environment === 'miniprogram' || typeof __wxjs_environment !== 'undefined');
         }
         function isAppEnvironment() {
-            return (navigator.userAgent.includes('Html5Plus') ||
-                typeof plus !== 'undefined' ||
-                navigator.userAgent.includes('UNIAPP'));
+            return (navigator.userAgent.includes('Html5Plus') || typeof plus !== 'undefined' || navigator.userAgent.includes('UNIAPP'));
         }
         function isH5Environment() {
             return !isMiniProgram() && !isAppEnvironment();
         }
-        function sendRequestAuthorization() {
-            const message = JSON.stringify({ type: 'requestAuthorization' });
-            console.log("[子页面]正在获取动态口令: ", message);
-            if (isMiniProgram()) {
-                if (typeof WeixinJSBridge !== 'undefined') {
-                    WeixinJSBridge.invoke('postMessage', {
-                        data: message,
-                        complete: function () {
-                            console.log('小程序环境: 动态口令请求已发送');
-                        }
-                    });
-                } else {
-                    console.error("小程序环境: WeixinJSBridge 不可用");
-                }
-            } else if (isAppEnvironment()) {
-                if (typeof plus !== 'undefined') {
-                    try {
-                        plus.webview.postMessageToParent(message, '*');
-                    } catch (e) {
-                        console.error('[子页面]App环境发送消息失败:', e);
-                    }
-                }
-            } else if (isH5Environment()) {
-                if (window.parent) {
-                    window.parent.postMessage(message, '*');
-                } else {
-                    console.error("[子页面]H5环境: 无法访问window.parent");
-                }
-            }
-        }
-        function handleTokenMessage(payload) {
-            try {
-                if (typeof payload !== 'string') return;
-                const message = JSON.parse(payload);
-                if (message.type === 'authorization') {
-                    document.getElementById('tokenValue').textContent = message.data;
-                    console.log('[子页面]成功获取动态口令:', message.data);
-                }
-            } catch (e) {
-                console.error('解析消息失败:', e);
-            }
-        }
-        function setupTokenListener() {
-            if (isMiniProgram() && typeof WeixinJSBridge !== 'undefined') {
-                WeixinJSBridge.on('message', function (event) {
-                    handleTokenMessage(event.data);
-                });
-            } else {
-                window.addEventListener('message', (event) => {
-                    handleTokenMessage(event.data);
-                });
-            }
-        }
+
         function initPage() {
             const requestBtn = document.getElementById('requestBtn');
             const miniProgramNote = document.getElementById('miniProgramNote');
@@ -105,25 +48,23 @@
             } else {
                 miniProgramNote.textContent = "环境适配失败，无法获取动态口令";
             }
-
             requestBtn.addEventListener('click', () => {
                 document.getElementById('tokenValue').textContent = "请求动态口令...";
-                sendRequestAuthorization();
+                if (isH5Environment()) {
+                    const message = JSON.stringify({ type: 'requestAuthorization' });
+                    window.parent?.postMessage(message, '*');
+                    console.log("[子页面]正在获取动态口令: ", message);
+                } else {
+                    const urlParams = new URLSearchParams(window.location.search);
+                    document.getElementById('tokenValue').textContent = urlParams.get('authorization');
+                }
             });
-
-            document.getElementById('tokenValue').textContent = "请求动态口令...";
-            sendRequestAuthorization();
+            window.addEventListener('message', (event) => {
+                document.getElementById('tokenValue').textContent = event.data;
+            });
         }
         document.addEventListener('DOMContentLoaded', () => {
-            setupTokenListener();
             initPage();
-        });
-
-
-        document.addEventListener('UniAppJSBridgeReady', function () {
-            uni.getEnv(function (res) {
-                console.log('当前环境：' + JSON.stringify(res));
-            });
         });
     </script>
 </body>

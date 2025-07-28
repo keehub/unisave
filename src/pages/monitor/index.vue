@@ -1,6 +1,6 @@
 <script lang="ts">
-import api from '@uni-helper/uni-network'
 import { computed, defineComponent, onBeforeUnmount, onMounted, ref } from 'vue'
+import { request } from '@/services/request'
 // #ifdef H5
 import player from '../player/index.vue'
 // #endif
@@ -130,13 +130,11 @@ export default defineComponent({
         uni.showToast({ title: '该设备暂时无法操作', icon: 'none' })
         return
       }
-      const title = item.labelNotes
-      const fullUrl = baseUrl.value + url
-      // fullUrl = 'https://water.sxsrxt.com/video/dist/test.html'
+      playTitle.value = item.labelNotes
+      // playUrl.value = baseUrl.value + url
+      playUrl.value = 'https://water.sxsrxt.com/video/dist/test.html'
 
       // #ifdef H5
-      playTitle.value = title
-      playUrl.value = fullUrl
       showPlayer.value = true
       // #endif
 
@@ -146,8 +144,8 @@ export default defineComponent({
         success: (res) => {
           res.eventChannel.emit('navigateToSendData', {
             authorization: authorization.value,
-            playUrl: fullUrl, // 改为使用当前生成的 fullUrl 而不是 playUrl.value
-            playTitle: title, // 直接传递当前视频的标题
+            playTitle: playTitle.value,
+            playUrl: playUrl.value,
           })
         },
       })
@@ -156,15 +154,15 @@ export default defineComponent({
 
     onMounted(() => {
       uni.showLoading({ title: '数据加载中...' })
-      api.get(`${baseUrl.value}/video/wvp/api/sangrui/tree`)
-        .then((res: any) => {
-          uni.hideLoading()
-          prepareTreeData(res.data.data)
-        })
-        .catch((err: any) => {
-          uni.hideLoading()
-          console.error(err)
-        })
+      request<any>(`${baseUrl.value}/video/wvp/api/sangrui/tree`, {}, {
+        method: 'GET',
+      }).then((res: any) => {
+        uni.hideLoading()
+        prepareTreeData(res.data)
+      }).catch((err: any) => {
+        uni.hideLoading()
+        console.error(err)
+      })
     })
 
     onBeforeUnmount(() => {
