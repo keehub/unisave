@@ -42,6 +42,9 @@
         "android": {},
         "ios": {}
       }
+    },
+    "compatible": {
+      "ignoreVersion": true
     }
   },
   "quickapp": {},

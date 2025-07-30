@@ -1,71 +1,145 @@
-<!DOCTYPE html>
 <html lang="zh-CN">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>动态口令子页面</title>
+    <style>
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .title-section {
+            margin-top: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .main-title {
+            color: #333;
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .note-message {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .token-container {
+            padding: 15px;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            margin-bottom: 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .token-value {
+            color: #6c757d;
+            font-size: 0.9rem;
+            flex-grow: 1;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .request-btn {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px;
+        }
+
+        @keyframes tokenUpdate {
+            0% {
+                transform: scale(1);
+                color: #6c757d;
+            }
+
+            50% {
+                transform: scale(1.05);
+                color: #0d6efd;
+            }
+
+            100% {
+                transform: scale(1);
+                color: #6c757d;
+            }
+        }
+
+        .token-updating {
+            animation: tokenUpdate 0.6s ease-in-out;
+        }
+    </style>
 </head>
 
 <body>
-    <div style="max-width: 600px;margin: 0 auto;">
-        <div style=" margin-top: 2rem; margin-bottom: 2rem;">
-            <span style="color: #333; font-size: 1.5rem; margin-bottom: 1rem;">这是被嵌套的子页面</span>
-            <span id="miniProgramNote" style="color: #6c757d; font-size: 0.9rem;" />
+    <div class="container">
+        <div class="title-section">
+            <span class="main-title">这是被嵌套的子页面</span>
+            <span id="noteMsg" class="note-message"></span>
         </div>
-        <div style="padding: 15px; border-radius: 6px; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1); margin-bottom: 1.5rem;
-            display: flex; justify-content: space-between; align-items: center;">
-            <span id="tokenValue" style="color: #6c757d;font-size: 0.9rem;flex-grow: 1;overflow: hidden; 
-                text-overflow: ellipsis;white-space: nowrap;">尚未获取</span>
-            <button id="requestBtn"
-                style="background-color: #0d6efd; color: white;border: none;border-radius: 6px;padding: 5px;">
+        <div class="token-container">
+            <span id="tokenValue" class="token-value">请求动态口令...</span>
+            <button id="requestBtn" class="request-btn">
                 获取动态口令
             </button>
         </div>
     </div>
-    <script src="https://unpkg.com/vconsole@latest/dist/vconsole.min.js"></script>
-    <script>new VConsole();</script>
     <script>
-        function isMiniProgram() {
-            return (navigator.userAgent.includes('miniprogram') || window.__wxjs_environment === 'miniprogram' || typeof __wxjs_environment !== 'undefined');
-        }
-        function isAppEnvironment() {
-            return (navigator.userAgent.includes('Html5Plus') || typeof plus !== 'undefined' || navigator.userAgent.includes('UNIAPP'));
-        }
-        function isH5Environment() {
-            return !isMiniProgram() && !isAppEnvironment();
+        const noteMsg = document.getElementById('noteMsg');
+        const requestBtn = document.getElementById('requestBtn');
+        const tokenValue = document.getElementById('tokenValue');
+
+        function updateTokenValue(newValue) {
+            tokenValue.classList.remove('token-updating');
+            void tokenValue.offsetWidth;
+            tokenValue.textContent = newValue;
+            tokenValue.classList.add('token-updating');
+            setTimeout(() => {
+                tokenValue.classList.remove('token-updating');
+            }, 600);
         }
 
-        function initPage() {
-            const requestBtn = document.getElementById('requestBtn');
-            const miniProgramNote = document.getElementById('miniProgramNote');
-            if (isMiniProgram()) {
-                miniProgramNote.textContent = "当前为小程序环境";
-            } else if (isAppEnvironment()) {
-                miniProgramNote.textContent = "当前为App环境";
-            } else if (isH5Environment()) {
-                miniProgramNote.textContent = "当前为H5环境";
-            } else {
-                miniProgramNote.textContent = "环境适配失败，无法获取动态口令";
+        window.addEventListener('message', (event) => {
+            let message = JSON.parse(event.data);
+            if (message.type === 'authorization') {
+                updateTokenValue(message.data);
+                console.log('[子页面]成功获取动态口令:', message.data);
             }
-            requestBtn.addEventListener('click', () => {
-                document.getElementById('tokenValue').textContent = "请求动态口令...";
-                if (isH5Environment()) {
-                    const message = JSON.stringify({ type: 'requestAuthorization' });
-                    window.parent?.postMessage(message, '*');
-                    console.log("[子页面]正在获取动态口令: ", message);
-                } else {
-                    const urlParams = new URLSearchParams(window.location.search);
-                    document.getElementById('tokenValue').textContent = urlParams.get('authorization');
-                }
-            });
-            window.addEventListener('message', (event) => {
-                document.getElementById('tokenValue').textContent = event.data;
-            });
-        }
-        document.addEventListener('DOMContentLoaded', () => {
-            initPage();
         });
+
+        requestBtn.addEventListener('click', () => {
+            updateTokenValue("请求动态口令...");
+            let isMiniProgram = navigator.userAgent.includes('miniprogram') || window.__wxjs_environment === 'miniprogram' || typeof __wxjs_environment !== 'undefined';
+            let isAppEnvironment = navigator.userAgent.includes('Html5Plus') || typeof plus !== 'undefined' && plus.os.name || navigator.userAgent.includes('UNIAPP');;
+            let isH5Environment = !isMiniProgram && !isAppEnvironment;
+
+            if (isMiniProgram) {
+                noteMsg.textContent = "当前为小程序环境";
+            } else if (isAppEnvironment) {
+                noteMsg.textContent = "当前为App环境";
+            } else if (isH5Environment) {
+                noteMsg.textContent = "当前为H5环境";
+            } else {
+                noteMsg.textContent = "环境适配失败，无法获取动态口令";
+            }
+
+            if (!isMiniProgram && !isAppEnvironment) {
+                let message = JSON.stringify({ type: 'requestAuthorization' });
+                console.log("[子页面]正在获取动态口令: ", message);
+                window.parent && window.parent.postMessage(message, '*');
+            } else {
+                let urlParams = new URLSearchParams(window.location.search);
+                let authorization = urlParams.get('authorization');
+                console.log('[子页面URL]成功获取动态口令:', authorization);
+                updateTokenValue(authorization);
+            }
+        });
+        requestBtn.click();
     </script>
 </body>
 

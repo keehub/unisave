@@ -30,11 +30,19 @@ export default defineComponent({
     playTitle.value = props.playTitle
     authorization.value = props.authorization
     const handleIframeMessage = (event: MessageEvent) => {
-      console.log('统一处理嵌入页面的消息:', event.data)
+      console.log('[父页面]发送消息:', typeof event.data, event.data)
+      if (typeof event.data === 'string') {
+        const data = JSON.parse(event.data)
+        if (data.type === 'requestAuthorization') {
+          const payload = JSON.stringify({
+            type: 'authorization',
+            data: authorization.value,
+          })
+          iframeRef.value?.contentWindow?.postMessage(payload, '*')
+        }
+      }
     }
-    window.addEventListener('message', (event: MessageEvent) => {
-      console.log('统一处理嵌入页面的消息:', event.data)
-    })
+    window.addEventListener('message', handleIframeMessage)
     onUnmounted(() => {
       window.removeEventListener('message', handleIframeMessage)
     })
