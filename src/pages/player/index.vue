@@ -94,7 +94,6 @@ export default defineComponent({
         allow="autoplay; fullscreen; screen-wake-lock"
       />
       <!-- #endif -->
-
       <!-- #ifdef MP | APP-PLUS -->
       <web-view :key="reloadKey" class="video-frame" :src="playUrl" />
       <!-- #endif -->
